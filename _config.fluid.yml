@@ -817,13 +817,13 @@ valine:
   path: window.location.pathname
   placeholder: 吐槽
   avatar: 'retro'
-  meta: ['nick', 'mail', 'link']
+  meta: ['nick', 'mail']
   requiredFields: []
   pageSize: 10
   lang: 'zh-CN'
   highlight: false
   recordIP: true
-  serverURLs: 'https://5jaxlyhe.api.lncldglobal.com'
+  serverURLs: ''
   emojiCDN:
   emojiMaps:
   enableQQ: false
