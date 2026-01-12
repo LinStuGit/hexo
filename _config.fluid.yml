@@ -815,15 +815,15 @@ valine:
   appId: 5JAXLYHES4P7yNaTBjHsTyn4-MdYXbMMI
   appKey: scunosD9MOay7rxfZuQ7m1aP
   path: window.location.pathname
-  placeholder:
+  placeholder: 吐槽
   avatar: 'retro'
   meta: ['nick', 'mail', 'link']
   requiredFields: []
   pageSize: 10
   lang: 'zh-CN'
   highlight: false
-  recordIP: false
-  serverURLs: ''
+  recordIP: true
+  serverURLs: 'https://5jaxlyhe.api.lncldglobal.com'
   emojiCDN:
   emojiMaps:
   enableQQ: false
