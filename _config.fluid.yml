@@ -348,7 +348,7 @@ iconfont: //at.alicdn.com/t/c/font_1736178_k526ubmyhba.css
 navbar:
   # 导航栏左侧的标题，为空则按 hexo config 中 `title` 显示
   # The title on the left side of the navigation bar. If empty, it is based on `title` in hexo config
-  blog_title: "Lin's Blog"
+  blog_title: "林小A's Blog"
 
   # 导航栏毛玻璃特效，实验性功能，可能会造成页面滚动掉帧和抖动，部分浏览器不支持会自动不生效
   # Navigation bar frosted glass special animation. It is an experimental feature
@@ -397,7 +397,7 @@ search:
   content: true
 
 # 首屏图片的相关配置
-# Config of the big image on the first screen
+# Config of the big image on thnne first screen
 banner:
   # 视差滚动，图片与板块会随着屏幕滚动产生视差效果
   # Scrolling parallax
@@ -466,7 +466,7 @@ footer:
   beian:
     enable: true
     # ICP证号
-    icp_text: 黔ICP证123456号
+    icp_text: 黔ICP备2026001203号
     # 公安备案号，不填则只显示ICP
     police_text:
     # 公安备案的编号，用于URL跳转查询
