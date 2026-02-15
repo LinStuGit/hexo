@@ -26,7 +26,7 @@ timezone: 'Asia/Shanghai'
 
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
 
-url: http://linthu.cn
+url: http://lin.linthu.cn
 
 permalink: :year/:month/:day/:title/
 
@@ -183,7 +183,7 @@ ignore:
 
 ## Themes: https://hexo.io/themes/
 
-theme: fluid
+theme: cactus
 
 
 # Deployment
