@@ -8,6 +8,25 @@
   NODE_VERSION = "18"
   NPM_VERSION = "9"
 
+# Identity 和 Git Gateway 重定向
+[[redirects]]
+  from = "/.netlify/identity/*"
+  to = "/.netlify/identity/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/.netlify/git/*"
+  to = "/.netlify/git/:splat"
+  status = 200
+  force = true
+
+# 确认邮件后的重定向
+[[redirects]]
+  from = "/.netlify/functions/identity-signup"
+  to = "/admin/"
+  status = 302
+
 # 重定向规则 - 确保 admin 路由正常工作
 [[redirects]]
   from = "/admin/*"
@@ -17,8 +36,8 @@
 
 # 可选：自定义域名重定向
 [[redirects]]
-  from = "http://www.your-domain.com/*"
-  to = "https://your-domain.com/:splat"
+  from = "https://lin.linthu.cn/*"
+  to = "https://lin.linthu.cn/:splat"
   status = 301
   force = true
 
