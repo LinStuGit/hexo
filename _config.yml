@@ -55,7 +55,7 @@ code_dir: downloads/code
 
 i18n_dir: :lang
 
-skip_render:
+skip_render: admin/**/*
 
 
 # Writing
