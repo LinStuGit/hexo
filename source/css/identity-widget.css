@@ -1,0 +1,30 @@
+/* 自定义 Identity Widget 样式 */
+.netlify-identity-modal {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.netlify-identity-modal-button {
+  background: #00ad9f !important;
+  border-radius: 4px;
+}
+
+.netlify-identity-modal-button:hover {
+  background: #008c82 !important;
+}
+
+/* 自定义登录按钮 */
+.custom-identity-btn {
+  background: linear-gradient(135deg, #00ad9f, #008c82);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.custom-identity-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 173, 159, 0.3);
+}

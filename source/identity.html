@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户登录 - Hexo Blog</title>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <style>
+    .identity-container {
+      max-width: 400px;
+      margin: 100px auto;
+      padding: 20px;
+      text-align: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .login-btn {
+      background: #00ad9f;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    .login-btn:hover {
+      background: #008c82;
+    }
+    .user-info {
+      background: #f5f5f5;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="identity-container">
+    <h1>用户登录</h1>
+    
+    <!-- 未登录状态 -->
+    <div id="login-section">
+      <p>请登录以访问更多内容</p>
+      <button class="login-btn" onclick="openLogin()">登录 / 注册</button>
+    </div>
+    
+    <!-- 已登录状态 -->
+    <div id="user-section" class="hidden">
+      <div class="user-info">
+        <p>欢迎，<strong id="user-email"></strong>!</p>
+        <button class="login-btn" onclick="gotoAdmin()">进入 CMS</button>
+        <button class="login-btn" style="background: #666;" onclick="logout()">退出登录</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 初始化 Identity Widget
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.on("init", function(user) {
+        updateUI(user);
+      });
+
+      window.netlifyIdentity.on("login", function(user) {
+        updateUI(user);
+        // 登录后重定向
+        window.location.href = '/admin/';
+      });
+
+      window.netlifyIdentity.on("logout", function() {
+        updateUI(null);
+      });
+    }
+
+    // 打开登录模态框
+    function openLogin() {
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.open();
+      }
+    }
+
+    // 退出登录
+    function logout() {
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.logout();
+      }
+    }
+
+    // 跳转到 CMS
+    function gotoAdmin() {
+      window.location.href = '/admin/';
+    }
+
+    // 更新 UI
+    function updateUI(user) {
+      const loginSection = document.getElementById('login-section');
+      const userSection = document.getElementById('user-section');
+      
+      if (user) {
+        loginSection.classList.add('hidden');
+        userSection.classList.remove('hidden');
+        document.getElementById('user-email').textContent = user.email;
+      } else {
+        loginSection.classList.remove('hidden');
+        userSection.classList.add('hidden');
+      }
+    }
+  </script>
+</body>
+</html>
