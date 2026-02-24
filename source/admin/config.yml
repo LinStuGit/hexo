@@ -4,6 +4,7 @@ backend:
   base_url: https://auth.linthu.cn
   identity_url: https://auth.linthu.cn/identity
   gateway_url: https://auth.linthu.cn/git
+  use_json_payload: true
 
   commit_messages:
     create: "CMS: 创建 {{collection}} {{slug}}"
@@ -14,8 +15,8 @@ backend:
 
 local_backend: true  # 允许本地开发时使用
 
-identity_url: https://lin.linthu.cn/.netlify/identity
-gateway_url: https://lin.linthu.cn/.netlify/git
+site_url: https://lin.linthu.cn
+display_url: https://lin.linthu.cn
 
 media_folder: "source/resources"
 public_folder: "/resources"
