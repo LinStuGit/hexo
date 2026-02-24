@@ -1,6 +1,9 @@
 backend:
-  name: git-gateway
+  name: github
   branch: master  # 或 master，根据您的仓库
+  repo: "LinStuGit/hexo"
+  base_url: https://auth.linthu.cn
+  auth_endpoint: /auth
   commit_messages:
     create: "CMS: 创建 {{collection}} {{slug}}"
     update: "CMS: 更新 {{collection}} {{slug}}"
@@ -49,9 +52,6 @@ collections:
     format: frontmatter
     
     fields:
-      - { label: "标题", name: "title", widget: "string" }
-      - { label: "路径", name: "path", widget: "string" }
-      - { label: "布局", name: "layout", widget: "string", default: "page" }
       - { label: "内容", name: "body", widget: "markdown" }
 
   - name: "settings"
