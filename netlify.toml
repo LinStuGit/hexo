@@ -1,0 +1,48 @@
+[build]
+  command = "hexo generate"
+  publish = "public"
+  functions = "netlify/functions"
+
+# 环境变量
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "9"
+
+# 重定向规则 - 确保 admin 路由正常工作
+[[redirects]]
+  from = "/admin/*"
+  to = "/admin/index.html"
+  status = 200
+  force = true
+
+# 可选：自定义域名重定向
+[[redirects]]
+  from = "http://www.your-domain.com/*"
+  to = "https://your-domain.com/:splat"
+  status = 301
+  force = true
+
+# 安全头
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# 缓存策略
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
