@@ -13,8 +13,8 @@ local_backend: true  # 允许本地开发时使用
 identity_url: https://lin.linthu.cn/.netlify/identity
 gateway_url: https://lin.linthu.cn/.netlify/git
 
-media_folder: "source/images/uploads"
-public_folder: "/images/uploads"
+media_folder: "source/resources"
+public_folder: "/resources"
 
 collections:
   - name: "posts"

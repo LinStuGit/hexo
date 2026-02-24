@@ -1,12 +1,14 @@
 <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="<%= url_for() %>">
-      <strong><%= theme.navbar.blog_title || config.title %></strong>
+      <strong>
+        <%= theme.navbar.blog_title || config.title %>
+      </strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
-            data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+      aria-label="Toggle navigation">
       <div class="animated-icon"><span></span><span></span><span></span></div>
     </button>
 
@@ -15,56 +17,92 @@
       <ul class="navbar-nav ml-auto text-center">
         <% for(const each of theme.navbar.menu || []) { %>
           <% if (!each.submenu && !each.link) continue %>
-          <% var text = each.name || __(each.key + '.menu') || __(each.key + '.title') %>
-          <% if (text.indexOf('.menu') !== -1 || text.indexOf('.title') !== -1) {
-            text = each.key
-          } %>
-          <% if (each.submenu) { %>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
-                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <%- each.icon ? '<i class="' + each.icon + '"></i>' : '' %>
-                <span><%- text %></span>
-              </a>
-              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <% for(const subEach of each.submenu || []) { %>
-                  <% if (!subEach.link) continue %>
-                  <% var subText = subEach.name || __(subEach.key + '.title') %>
-                  <% if (subText.indexOf('.title') !== -1) {
-                    subText = subEach.key
-                  } %>
-                  <a class="dropdown-item" href="<%= url_for(subEach.link) %>" target="<%= subEach.target || '_self' %>">
-                    <%- subEach.icon ? '<i class="' + subEach.icon + '"></i>' : '' %>
-                    <span><%- subText %></span>
-                  </a>
-                <% } %>
-              </div>
-            </li>
-          <% } else { %>
-            <li class="nav-item">
-              <a class="nav-link" href="<%= url_for(each.link) %>" target="<%= each.target || '_self' %>">
-                <%- each.icon ? '<i class="' + each.icon + '"></i>' : '' %>
-                <span><%- text %></span>
-              </a>
-            </li>
-          <% } %>
-        <% } %>
-        <% if(theme.search.enable) { %>
-          <li class="nav-item" id="search-btn">
-            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              <i class="iconfont icon-search"></i>
-            </a>
-          </li>
-          <% import_js(theme.static_prefix.internal_js, 'local-search.js') %>
-        <% } %>
-        <% if(theme.dark_mode && theme.dark_mode.enable) { %>
-          <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
-              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
-            </a>
-          </li>
-        <% } %>
+            <% var text=each.name || __(each.key + '.menu' ) || __(each.key + '.title' ) %>
+              <% if (text.indexOf('.menu') !==-1 || text.indexOf('.title') !==-1) { text=each.key } %>
+                <% if (each.submenu) { %>
+                  <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <%- each.icon ? '<i class="' + each.icon + '"></i>' : '' %>
+                        <span><%- text %></span>
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                      <% for(const subEach of each.submenu || []) { %>
+                        <% if (!subEach.link) continue %>
+                          <% var subText=subEach.name || __(subEach.key + '.title' ) %>
+                            <% if (subText.indexOf('.title') !==-1) { subText=subEach.key } %>
+                              <a class="dropdown-item" href="<%= url_for(subEach.link) %>"
+                                target="<%= subEach.target || '_self' %>">
+                                <%- subEach.icon ? '<i class="' + subEach.icon + '"></i>' : '' %>
+                                  <span><%- subText %></span>
+                              </a>
+                              <% } %>
+                    </div>
+                  </li>
+                  <% } else { %>
+                    <li class="nav-item">
+                      <a class="nav-link" href="<%= url_for(each.link) %>" target="<%= each.target || '_self' %>">
+                        <%- each.icon ? '<i class="' + each.icon + '"></i>' : '' %>
+                          <span><%- text %></span>
+                      </a>
+                    </li>
+                    <% } %>
+                      <% } %>
+                        <% if(theme.search.enable) { %>
+                          <li class="nav-item" id="search-btn">
+                            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal"
+                              data-target="#modalSearch" aria-label="Search">
+                              <i class="iconfont icon-search"></i>
+                            </a>
+                          </li>
+                          <% import_js(theme.static_prefix.internal_js, 'local-search.js' ) %>
+                            <% } %>
+                              <% if(theme.dark_mode && theme.dark_mode.enable) { %>
+                                <li class="nav-item" id="color-toggle-btn">
+                                  <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+                                    <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+                                  </a>
+                                </li>
+                                <% } %>
       </ul>
     </div>
   </div>
+
+  <!-- 登录/注册按钮 -->
+  <div id="netlify-login-container">
+    <button class="netlify-identity-button" data-netlify-identity-button>
+      登录 / 注册
+    </button>
+  </div>
+
+  <!-- 用户信息显示（登录后） -->
+  <div id="user-info" style="display: none;">
+    <span id="user-email"></span>
+    <button onclick="logout()">退出登录</button>
+  </div>
+
+  <script>
+    // 监听登录状态
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.on("login", function (user) {
+        document.getElementById('netlify-login-container').style.display = 'none';
+        document.getElementById('user-info').style.display = 'block';
+        document.getElementById('user-email').textContent = user.email;
+        console.log("用户已登录:", user.email);
+      });
+
+      window.netlifyIdentity.on("logout", function () {
+        document.getElementById('netlify-login-container').style.display = 'block';
+        document.getElementById('user-info').style.display = 'none';
+        console.log("用户已退出");
+      });
+    }
+
+    // 退出登录函数
+    function logout() {
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.logout();
+      }
+    }
+  </script>
 </nav>
