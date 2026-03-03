@@ -3,7 +3,7 @@ backend:
   branch: master
   base_url: https://auth.linthu.cn
   identity_url: https://auth.linthu.cn/identity
-  gateway_url: https://auth.linthu.cn/git
+  gateway_url: https://auth.linthu.cn/git/github
   use_json_payload: true
 
   commit_messages:
