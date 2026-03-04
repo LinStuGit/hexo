@@ -7,4 +7,5 @@ layout: about
 ```
 Hello World！
 这里是关于页！
+一切都是git-gateway!
 ```
