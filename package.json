@@ -5,8 +5,9 @@
   "scripts": {
     "build": "hexo generate",
     "clean": "hexo clean",
-    "deploy": "hexo deploy",
-    "server": "hexo server"
+    "deploy": "npm run build && wrangler deploy",
+    "server": "hexo server",
+    "preview": "npm run build && wrangler dev"
   },
   "hexo": {
     "version": "8.1.1"
@@ -24,6 +25,7 @@
     "hexo-theme-fluid": "^1.9.8"
   },
   "devDependencies": {
-    "hexo-clean-css": "^2.0.0"
+    "hexo-clean-css": "^2.0.0",
+    "wrangler": "^4.70.0"
   }
 }
