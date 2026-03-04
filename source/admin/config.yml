@@ -1,6 +1,7 @@
 backend:
   name: git-gateway
   branch: master
+  repo: LinStuGit/hexo
   base_url: https://auth.linthu.cn
   identity_url: https://auth.linthu.cn/identity
   gateway_url: https://auth.linthu.cn/git/github
