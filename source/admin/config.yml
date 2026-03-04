@@ -47,7 +47,7 @@ collections:
 
   - name: "pages"
     label: "页面"
-    folder: "source"
+    folder: "source/about"
     create: true
     slug: "{{slug}}"
     extension: md
