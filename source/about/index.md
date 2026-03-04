@@ -6,4 +6,5 @@ layout: about
 
 ```
 Hello World！
+这里是关于页！
 ```
