@@ -1034,10 +1034,10 @@ links:
       avatar: "/img/favicon.png"
     }
     - {
-      title: 云藉
-      url: https://kumosya.top/
-      avatar: https://kumosya.top/image/avatar.webp
-      description: 记录滴滴点点，穿梭片片汪洋
+      title: "云藉"
+      intro: "记录滴滴点点，穿梭片片汪洋"
+      link: "https://kumosya.top/"
+      avatar: "https://kumosya.top/image/avatar.webp"
     }
     - {
       title: "Fluid Blog",
