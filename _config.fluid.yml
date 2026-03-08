@@ -1040,6 +1040,12 @@ links:
       avatar: "https://kumosya.top/image/avatar.webp"
     }
     - {
+      title: "一口生亦",
+      intro: "每天的主线任务就是好好活着！",
+      link: "https://yksy.linthu.cn",
+      avatar: "https://yksy.linthu.cn/img/favicon.jpg"
+    }
+    - {
       title: "Fluid Blog",
       intro: "主题博客",
       link: "https://hexo.fluid-dev.com/",
