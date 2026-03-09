@@ -73,37 +73,34 @@
 <style>
     .share-buttons {
         display: flex;
-        flex-direction: column;
-        gap: 15px;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
         width: 100%;
-        max-width: 400px;
     }
 
     .share-btn {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 12px;
-        padding: 16px 24px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
         border: none;
-        border-radius: 12px;
-        font-size: 16px;
-        font-weight: 500;
         cursor: pointer;
         transition: all 0.3s ease;
-        text-decoration: none;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        width: 100%;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        padding: 0;
         color: white;
     }
 
     .share-btn:active {
-        transform: scale(0.98);
+        transform: scale(0.92);
     }
 
     .share-btn svg {
-        width: 24px;
-        height: 24px;
+        width: 28px;
+        height: 28px;
     }
 
     .share-btn.wechat {
@@ -112,7 +109,8 @@
 
     .share-btn.wechat:hover {
         background: linear-gradient(135deg, #06ad56 0%, #059d4d 100%);
-        box-shadow: 0 6px 20px rgba(7, 193, 96, 0.4);
+        box-shadow: 0 6px 20px rgba(7, 193, 96, 0.5);
+        transform: translateY(-2px);
     }
 
     .share-btn.qq {
@@ -121,7 +119,8 @@
 
     .share-btn.qq:hover {
         background: linear-gradient(135deg, #0e9de0 0%, #0c87c8 100%);
-        box-shadow: 0 6px 20px rgba(18, 183, 245, 0.4);
+        box-shadow: 0 6px 20px rgba(18, 183, 245, 0.5);
+        transform: translateY(-2px);
     }
 
     .share-btn.copy {
@@ -130,13 +129,23 @@
 
     .share-btn.copy:hover {
         background: linear-gradient(135deg, #f5576c 0%, #ed4a60 100%);
-        box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+        box-shadow: 0 6px 20px rgba(245, 87, 108, 0.5);
+        transform: translateY(-2px);
     }
 
     @media (max-width: 480px) {
         .share-btn {
-            padding: 14px 20px;
-            font-size: 15px;
+            width: 52px;
+            height: 52px;
+        }
+
+        .share-btn svg {
+            width: 26px;
+            height: 26px;
+        }
+
+        .share-buttons {
+            gap: 15px;
         }
     }
 
@@ -195,32 +204,29 @@
 </style>
 
 <div class="share-buttons">
-    <button class="share-btn wechat" onclick="shareToWeChat()">
+    <button class="share-btn wechat" onclick="shareToWeChat()" title="分享到微信">
         <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 01.213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.32.32 0 00.17-.049l1.903-1.114a.864.864 0 01.717-.098 10.16 10.16 0 002.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178A1.17 1.17 0 014.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178 1.17 1.17 0 01-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 01.598.082l1.584.926a.27.27 0 00.141.04c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 01-.023-.156.49.49 0 01.201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.269-.03-.407-.032zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 01-.969.983.976.976 0 01-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 01-.969.983.976.976 0 01-.969-.983c0-.542.434-.982.969-.982z"/>
         </svg>
-        分享到微信
     </button>
     
-    <button class="share-btn qq" onclick="shareToQQ()">
+    <button class="share-btn qq" onclick="shareToQQ()" title="分享到QQ">
         <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M12.003 2c-5.523 0-10 3.928-10 8.776 0 3.292 2.145 6.166 5.357 7.596l-.336 3.228 3.078-1.766c.62.09 1.254.137 1.901.137 5.523 0 10-3.928 10-8.776s-4.477-8.695-10-8.695zm-1.905 11.878c-.535 0-.969-.44-.969-.983s.434-.982.969-.982c.535 0 .969.44.969.982s-.434.983-.969.983zm4.81 0c-.535 0-.969-.44-.969-.983s.434-.982.969-.982c.535 0 .969.44.969.982s-.434.983-.969.983zM7.003 8.5l2.5 4h-5l2.5-4zm10 0l2.5 4h-5l2.5-4z"/>
         </svg>
-        分享到QQ
     </button>
     
-    <button class="share-btn copy" onclick="copyLink()">
+    <button class="share-btn copy" onclick="copyLink()" title="复制链接">
         <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
         </svg>
-        复制链接
     </button>
 </div>
 
 <div id="toast" class="toast"></div>
 
 <div id="wechatOverlay" class="wechat-overlay" onclick="hideWechatOverlay()">
-    <p class="wechat-overlay-text">点击右上角的 "..."<br>选择 "发送给朋友" 或 "分享到朋友圈"</p>
+    <p class="wechat-overlay-text" id="overlayText">点击右上角的 "..."<br>选择 "发送给朋友" 或 "分享到朋友圈"</p>
     <p class="wechat-overlay-close">点击关闭</p>
 </div>
 
@@ -233,16 +239,69 @@ function shareToWeChat() {
     const isWeixin = /MicroMessenger/i.test(navigator.userAgent);
     
     if (isWeixin) {
+        document.getElementById('overlayText').innerHTML = '点击右上角的 "..."<br>选择 "发送给朋友" 或 "分享到朋友圈"';
         document.getElementById('wechatOverlay').classList.add('show');
     } else if (isMobile()) {
-        window.location.href = 'weixin://';
-        setTimeout(() => {
-            showToast('如果未打开微信，请手动打开微信分享');
-        }, 2000);
+        tryLaunchWeChat();
     } else {
         copyLink();
         showToast('已复制链接，请打开微信分享给好友');
     }
+}
+
+function tryLaunchWeChat() {
+    const wechatSchemes = [
+        'weixin://',
+        'weixin://dl/chat',
+        'weixin://dl/business/',
+        'weixin://dl/moments'
+    ];
+    
+    let currentSchemeIndex = 0;
+    let launched = false;
+    let launchStartTime = Date.now();
+    
+    function tryNextScheme() {
+        if (currentSchemeIndex >= wechatSchemes.length) {
+            if (!launched && (Date.now() - launchStartTime) < 5000) {
+                copyLink();
+                showToast('链接已复制，请打开微信粘贴分享');
+            }
+            return;
+        }
+        
+        const startTime = Date.now();
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = wechatSchemes[currentSchemeIndex];
+        document.body.appendChild(iframe);
+        
+        setTimeout(() => {
+            document.body.removeChild(iframe);
+            
+            const isWeixinInstalled = (Date.now() - startTime) < 300;
+            
+            if (isWeixinInstalled && !launched) {
+                launched = true;
+                setTimeout(() => {
+                    copyLink();
+                    showToast('已打开微信，请在微信中粘贴链接分享');
+                }, 1500);
+            } else {
+                currentSchemeIndex++;
+                setTimeout(tryNextScheme, 100);
+            }
+        }, 250);
+    }
+    
+    setTimeout(() => {
+        if (!launched && (Date.now() - launchStartTime) < 5000) {
+            copyLink();
+            showToast('链接已复制，请打开微信粘贴分享');
+        }
+    }, 5000);
+    
+    tryNextScheme();
 }
 
 function hideWechatOverlay() {
@@ -250,8 +309,72 @@ function hideWechatOverlay() {
 }
 
 function shareToQQ() {
-    const qqShareUrl = `https://connect.qq.com/widget/shareqq/index.html?url=${encodeURIComponent(currentUrl)}&title=${encodeURIComponent(title)}&desc=${encodeURIComponent(description)}`;
-    window.open(qqShareUrl, '_blank');
+    const isQQ = /QQ/i.test(navigator.userAgent);
+    
+    if (isQQ) {
+        document.getElementById('overlayText').innerHTML = '点击右上角的 "..."<br>选择 "发送给好友"';
+        document.getElementById('wechatOverlay').classList.add('show');
+    } else if (isMobile()) {
+        tryLaunchQQ();
+    } else {
+        const qqShareUrl = `https://connect.qq.com/widget/shareqq/index.html?url=${encodeURIComponent(currentUrl)}&title=${encodeURIComponent(title)}&desc=${encodeURIComponent(description)}`;
+        window.open(qqShareUrl, '_blank');
+    }
+}
+
+function tryLaunchQQ() {
+    const qqSchemes = [
+        'mqqwpa://',
+        'mqq://',
+        'mqqapi://',
+        'tim://'
+    ];
+    
+    let currentSchemeIndex = 0;
+    let launched = false;
+    let launchStartTime = Date.now();
+    
+    function tryNextScheme() {
+        if (currentSchemeIndex >= qqSchemes.length) {
+            if (!launched && (Date.now() - launchStartTime) < 5000) {
+                copyLink();
+                showToast('链接已复制，请打开QQ粘贴分享');
+            }
+            return;
+        }
+        
+        const startTime = Date.now();
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = qqSchemes[currentSchemeIndex];
+        document.body.appendChild(iframe);
+        
+        setTimeout(() => {
+            document.body.removeChild(iframe);
+            
+            const isQQInstalled = (Date.now() - startTime) < 300;
+            
+            if (isQQInstalled && !launched) {
+                launched = true;
+                setTimeout(() => {
+                    copyLink();
+                    showToast('已打开QQ，请在QQ中粘贴链接分享');
+                }, 1500);
+            } else {
+                currentSchemeIndex++;
+                setTimeout(tryNextScheme, 100);
+            }
+        }, 250);
+    }
+    
+    setTimeout(() => {
+        if (!launched && (Date.now() - launchStartTime) < 5000) {
+            const qqShareUrl = `https://connect.qq.com/widget/shareqq/index.html?url=${encodeURIComponent(currentUrl)}&title=${encodeURIComponent(title)}&desc=${encodeURIComponent(description)}`;
+            window.open(qqShareUrl, '_blank');
+        }
+    }, 5000);
+    
+    tryNextScheme();
 }
 
 function copyLink() {
