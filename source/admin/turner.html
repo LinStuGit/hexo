@@ -44,6 +44,8 @@
             transition: background 0.3s;
         }
         .status-indicator.connected { background: #28a745; }
+        .status-indicator.hc02-connected { background: #17a2b8; }
+        .status-indicator.all-connected { background: #28a745; box-shadow: 0 0 8px #28a745; }
         .status-text { font-size: 14px; color: #666; }
         .content { padding: 20px; }
         .btn-group {
@@ -75,6 +77,39 @@
         .btn-connect:hover { box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4); }
         .btn-connect.connected { background: #6c757d; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+        .motor-control {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .motor-control-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .motor-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .motor-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+        }
+        .motor-input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        .motor-slider {
+            width: 100%;
+            margin-top: 10px;
+        }
         .position-info {
             background: #f8f9fa;
             border-radius: 12px;
@@ -106,6 +141,8 @@
         .log-line { color: #d4d4d4; margin-bottom: 5px; line-height: 1.4; }
         .log-line.info { color: #4fc3f7; }
         .log-line.success { color: #81c784; }
+        .log-line.warning { color: #ffb74d; }
+        .log-line.motor { color: #ce93d8; }
         .language-toggle { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
         .lang-btn {
             padding: 8px 16px;
@@ -128,6 +165,22 @@
             font-size: 12px;
             color: #856404;
         }
+        .connection-status {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .conn-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .conn-badge.gary { background: #e9ecef; color: #495057; }
+        .conn-badge.gary.connected { background: #28a745; color: white; }
+        .conn-badge.hc02 { background: #e9ecef; color: #495057; }
+        .conn-badge.hc02.connected { background: #17a2b8; color: white; }
         @media (max-width: 480px) { .btn-group { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -137,7 +190,7 @@
         
         <div class="content">
             <div class="bluetooth-note" id="bluetoothNote">
-                <strong>注意：</strong>此页面需要浏览器支持 Web Bluetooth API。请使用 Chrome、Edge 或 Opera 浏览器，并确保 HTTPS 或 localhost 环境访问。
+                <strong>注意：</strong>此页面需要浏览器支持 Web Bluetooth API。请使用 Chrome、Edge 浏览器，并确保 HTTPS 或 localhost 环境访问。
             </div>
             
             <div class="language-toggle">
@@ -149,13 +202,27 @@
                 <div class="status-indicator" id="statusIndicator"></div>
                 <span class="status-text" id="statusText">未连接</span>
             </div>
+
+            <div class="connection-status">
+                <span class="conn-badge gary" id="garyBadge">Gary</span>
+                <span class="conn-badge hc02" id="hc02Badge">HC-02</span>
+            </div>
             
             <div class="btn-group">
-                <button class="btn btn-connect" id="connectBtn" onclick="toggleConnect()">连接蓝牙</button>
+                <button class="btn btn-connect" id="connectBtn" onclick="toggleConnect()">连接设备</button>
                 <button class="btn btn-primary" id="initBtn" onclick="sendCommand('init')" disabled>设置起始点</button>
                 <button class="btn btn-primary" id="finalBtn" onclick="sendCommand('fina')" disabled>设置终点</button>
                 <button class="btn btn-secondary" id="pageBtn" onclick="sendCommand('move')" disabled>翻页</button>
                 <button class="btn btn-secondary" id="statusBtn" onclick="sendCommand('statu')" disabled>查看状态</button>
+            </div>
+
+            <div class="motor-control">
+                <div class="motor-control-title" id="motorTitle">电机转速 (0-255)</div>
+                <div class="motor-input-group">
+                    <input type="number" class="motor-input" id="motorSpeed" min="0" max="255" value="0" onchange="updateMotorSpeed()">
+                    <button class="btn btn-secondary" id="setMotorBtn" onclick="setMotorSpeed()" disabled>设置转速</button>
+                </div>
+                <input type="range" class="motor-slider" id="motorSlider" min="0" max="255" value="0" oninput="syncMotorInput()">
             </div>
             
             <div class="position-info">
@@ -174,7 +241,7 @@
                     <span class="log-title" id="logTitle">日志</span>
                     <button class="btn btn-secondary" style="padding:5px 15px;font-size:12px" onclick="clearLog()">清除</button>
                 </div>
-                <div class="log-container" id="logContainer"><div class="log-line">System ready. Click "Connect Bluetooth" to start.</div></div>
+                <div class="log-container" id="logContainer"><div class="log-line">System ready. Click "Connect Devices" to start.</div></div>
             </div>
         </div>
     </div>
@@ -183,22 +250,34 @@
         // Pybricks Bluetooth UUIDs
         const PYBRICKS_SERVICE_UUID = 'c5f50001-8280-46da-89f4-6d8051e4aeef';
         const PYBRICKS_COMMAND_CHAR_UUID = 'c5f50002-8280-46da-89f4-6d8051e4aeef';
-        const HUB_NAME = 'Gary';
+        
+        // HC-02 BLE UUIDs
+        const UART_SERVICE_UUID = '49535343-fe7d-4ae5-8fa9-9fafd205e455';
+        const HC02_TX_CHAR_UUID = '49535343-1e4d-4bd9-ba61-23c647249616'; // Central writes here to send to HC-02
+        const HC02_RX_CHAR_UUID = '49535343-8841-43f4-a8d4-ecbe34729bb3'; // Central reads from HC-02
         
         let lang = 'zh';
-        let device = null;
-        let server = null;
-        let characteristic = null;
+        let garyDevice = null;
+        let garyServer = null;
+        let garyCharacteristic = null;
+        let garyConnected = false;
+        let hc02Device = null;
+        let hc02Server = null;
+        let hc02TxChar = null;  // For receiving from HC-02
+        let hc02RxChar = null;  // For sending to HC-02
+        let hc02Connected = false;
         let connected = false;
         let pendingCmd = null;
         let initFlag = null;
         let finalFlag = null;
         let dataBuffer = '';
-        
+        let motorSpeed = 0;
+        let pageInProgress = false;
+
         const t = {
             zh: {
                 title: '翻页机械臂控制',
-                connect: '连接蓝牙',
+                connect: '连接设备',
                 disconnect: '断开连接',
                 init: '设置起始点',
                 final: '设置终点',
@@ -209,12 +288,14 @@
                 notSet: '未设置',
                 logTitle: '日志',
                 statusDisconnected: '未连接',
-                statusConnected: '已连接',
-                bluetoothNote: '<strong>注意：</strong>此页面需要浏览器支持 Web Bluetooth API。请使用 Chrome、Edge 或 Opera 浏览器，并确保 HTTPS 或 localhost 环境访问。'
+                statusConnected: '已连接(部分)',
+                statusAllConnected: '已连接',
+                bluetoothNote: '<strong>注意：</strong>此页面需要浏览器支持 Web Bluetooth API。请使用 Chrome、Edge 浏览器，并确保 HTTPS 或 localhost 环境访问。',
+                motorTitle: '电机转速 (0-255)'
             },
             en: {
                 title: 'Page Turner Arm Control',
-                connect: 'Connect Bluetooth',
+                connect: 'Connect Devices',
                 disconnect: 'Disconnect',
                 init: 'Set Start',
                 final: 'Set End',
@@ -225,11 +306,13 @@
                 notSet: 'Not Set',
                 logTitle: 'Log',
                 statusDisconnected: 'Disconnected',
-                statusConnected: 'Connected',
-                bluetoothNote: '<strong>Note:</strong> This page requires Web Bluetooth API support. Use Chrome, Edge, or Opera browser, and ensure HTTPS or localhost access.'
+                statusConnected: 'Connected (Partial)',
+                statusAllConnected: 'All Connected',
+                bluetoothNote: '<strong>Note:</strong> This page requires Web Bluetooth API. Use Chrome or Edge browser, and ensure HTTPS or localhost access.',
+                motorTitle: 'Motor Speed (0-255)'
             }
         };
-        
+
         function setLanguage(l) {
             lang = l;
             const tr = t[l];
@@ -238,31 +321,45 @@
             document.getElementById('endLabel').textContent = tr.endLabel;
             document.getElementById('logTitle').textContent = tr.logTitle;
             document.getElementById('bluetoothNote').innerHTML = tr.bluetoothNote;
+            document.getElementById('motorTitle').textContent = tr.motorTitle;
             document.getElementById('langZh').classList.toggle('active', l === 'zh');
             document.getElementById('langEn').classList.toggle('active', l === 'en');
             updateStatusDisplay();
         }
-        
+
         function updateStatusDisplay() {
             const tr = t[lang];
             const indicator = document.getElementById('statusIndicator');
             const statusText = document.getElementById('statusText');
             const connectBtn = document.getElementById('connectBtn');
+            const garyBadge = document.getElementById('garyBadge');
+            const hc02Badge = document.getElementById('hc02Badge');
+
+            garyBadge.classList.toggle('connected', garyConnected);
+            hc02Badge.classList.toggle('connected', hc02Connected);
+
+            connected = garyConnected && hc02Connected;
             
             if (connected) {
-                indicator.classList.add('connected');
+                indicator.classList.add('connected', 'all-connected');
+                statusText.textContent = tr.statusAllConnected;
+                connectBtn.textContent = tr.disconnect;
+                connectBtn.classList.add('connected');
+            } else if (garyConnected || hc02Connected) {
+                indicator.classList.add('connected', 'hc02-connected');
+                indicator.classList.remove('all-connected');
                 statusText.textContent = tr.statusConnected;
                 connectBtn.textContent = tr.disconnect;
                 connectBtn.classList.add('connected');
             } else {
-                indicator.classList.remove('connected');
+                indicator.classList.remove('connected', 'hc02-connected', 'all-connected');
                 statusText.textContent = tr.statusDisconnected;
                 connectBtn.textContent = tr.connect;
                 connectBtn.classList.remove('connected');
             }
             
-            ['initBtn', 'finalBtn', 'pageBtn', 'statusBtn'].forEach(id => {
-                document.getElementById(id).disabled = !connected;
+            ['initBtn', 'finalBtn', 'pageBtn', 'statusBtn', 'setMotorBtn'].forEach(id => {
+                document.getElementById(id).disabled = !garyConnected;
             });
             
             const sv = document.getElementById('startValue');
@@ -282,20 +379,54 @@
                 ev.classList.remove('set');
             }
         }
-        
+
         function addLog(msg, level = 'info') {
             const lc = document.getElementById('logContainer');
             const line = document.createElement('div');
             line.className = `log-line ${level}`;
-            line.textContent = msg;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
             lc.appendChild(line);
             lc.scrollTop = lc.scrollHeight;
         }
-        
+
         function clearLog() {
             document.getElementById('logContainer').innerHTML = '';
         }
-        
+
+        function syncMotorInput() {
+            const slider = document.getElementById('motorSlider');
+            document.getElementById('motorSpeed').value = slider.value;
+        }
+
+        function updateMotorSpeed() {
+            const input = document.getElementById('motorSpeed');
+            const slider = document.getElementById('motorSlider');
+            let val = parseInt(input.value) || 0;
+            val = Math.max(0, Math.min(255, val));
+            input.value = val;
+            slider.value = val;
+            motorSpeed = val;
+        }
+
+        function setMotorSpeed() {
+            updateMotorSpeed();
+            addLog(`Motor speed set to: ${motorSpeed}`, 'motor');
+        }
+
+        async function sendToHC02(cmd) {
+            if (!hc02Connected || !hc02RxChar) {
+                addLog('HC-02 not connected', 'warning');
+                return;
+            }
+            try {
+                const encoder = new TextEncoder();
+                await hc02RxChar.writeValue(encoder.encode(cmd + '\n'));
+                addLog(`HC-02 TX: ${cmd}`, 'motor');
+            } catch (e) {
+                addLog(`HC-02 send error: ${e.message}`, 'error');
+            }
+        }
+
         async function toggleConnect() {
             if (connected) {
                 await disconnect();
@@ -303,60 +434,139 @@
                 await connect();
             }
         }
-        
+
         async function connect() {
+            // 连接 Gary (Bluetooth)
+            await connectGary();
+            // 连接 HC-02 (BLE)
+            await connectHC02();
+            updateStatusDisplay();
+        }
+
+        async function connectGary() {
             try {
                 dataBuffer = '';
-                addLog('Requesting Bluetooth device...', 'info');
+                addLog('Requesting Gary device...', 'info');
                 
-                device = await navigator.bluetooth.requestDevice({
+                garyDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ namePrefix: 'Gary' }],
                     optionalServices: [PYBRICKS_SERVICE_UUID]
                 });
                 
-                addLog(`Device: ${device.name}`, 'success');
+                addLog(`Gary found: ${garyDevice.name}`, 'success');
                 
-                device.addEventListener('gattserverdisconnected', onDisconnected);
+                garyDevice.addEventListener('gattserverdisconnected', onGaryDisconnected);
                 
-                server = await device.gatt.connect();
-                const service = await server.getPrimaryService(PYBRICKS_SERVICE_UUID);
-                characteristic = await service.getCharacteristic(PYBRICKS_COMMAND_CHAR_UUID);
+                garyServer = await garyDevice.gatt.connect();
+                const service = await garyServer.getPrimaryService(PYBRICKS_SERVICE_UUID);
+                garyCharacteristic = await service.getCharacteristic(PYBRICKS_COMMAND_CHAR_UUID);
                 
-                await characteristic.startNotifications();
-                characteristic.addEventListener('characteristicvaluechanged', onCharacteristicChanged);
+                await garyCharacteristic.startNotifications();
+                garyCharacteristic.addEventListener('characteristicvaluechanged', onGaryCharacteristicChanged);
                 
-                connected = true;
+                garyConnected = true;
                 updateStatusDisplay();
-                addLog('Connected successfully!', 'success');
+                addLog('Gary connected successfully!', 'success');
                 
             } catch (error) {
-                addLog(`Error: ${error.message}`, 'error');
-                connected = false;
-                updateStatusDisplay();
+                addLog(`Gary error: ${error.message}`, 'error');
+                garyConnected = false;
             }
+        }
+
+        async function connectHC02() {
+            try {
+                addLog('Requesting HC-02 BLE device...', 'info');
+                
+                hc02Device = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: [UART_SERVICE_UUID]
+                });
+                
+                addLog(`HC-02 found: ${hc02Device.name || 'Unknown'}`, 'success');
+                
+                // 验证是否为ATTiny85-Motor设备
+                if (!hc02Device.name || !hc02Device.name.includes('ATTiny85')) {
+                    addLog('Please select ATTiny85-Motor device', 'warning');
+                    hc02Device = null;
+                    return;
+                }
+                
+                hc02Device.addEventListener('gattserverdisconnected', onHC02Disconnected);
+                
+                hc02Server = await hc02Device.gatt.connect();
+                const service = await hc02Server.getPrimaryService(UART_SERVICE_UUID);
+                
+                // 获取TX特征(接收数据)和RX特征(发送数据)
+                const characteristics = await service.getCharacteristics();
+                for (const char of characteristics) {
+                    if (char.uuid === HC02_TX_CHAR_UUID) {
+                        hc02TxChar = char;
+                        await hc02TxChar.startNotifications();
+                        hc02TxChar.addEventListener('characteristicvaluechanged', onHC02CharacteristicChanged);
+                    } else if (char.uuid === HC02_RX_CHAR_UUID) {
+                        hc02RxChar = char;
+                    }
+                }
+                
+                hc02Connected = true;
+                updateStatusDisplay();
+                addLog('HC-02 connected successfully!', 'success');
+                
+            } catch (error) {
+                addLog(`HC-02 error: ${error.message}`, 'error');
+                hc02Connected = false;
+            }
+        }
+
+        function onHC02Disconnected(event) {
+            hc02Connected = false;
+            updateStatusDisplay();
+            addLog('HC-02 disconnected', 'warning');
+        }
+        
+        function onHC02CharacteristicChanged(event) {
+            const value = event.target.value;
+            if (!value || value.byteLength === 0) return;
+            
+            const text = new TextDecoder('utf-8', { fatal: false }).decode(value);
+            addLog(`HC-02 RX: ${text.trim()}`, 'motor');
         }
         
         async function disconnect() {
+            // 断开Gary
             try {
-                if (device && device.gatt.connected) {
-                    device.gatt.disconnect();
+                if (garyDevice && garyDevice.gatt.connected) {
+                    garyDevice.gatt.disconnect();
                 }
-                connected = false;
-                updateStatusDisplay();
-                addLog('Disconnected', 'info');
+                garyConnected = false;
             } catch (error) {
-                addLog(`Disconnect error: ${error.message}`, 'error');
+                addLog(`Gary disconnect error: ${error.message}`, 'error');
             }
-        }
-        
-        function onDisconnected(event) {
-            connected = false;
-            dataBuffer = '';
+            
+            // 断开HC-02
+            try {
+                if (hc02Device && hc02Device.gatt.connected) {
+                    hc02Device.gatt.disconnect();
+                }
+                hc02Connected = false;
+            } catch (error) {
+                addLog(`HC-02 disconnect error: ${error.message}`, 'error');
+            }
+            
             updateStatusDisplay();
-            addLog('Device disconnected', 'warning');
+            addLog('Disconnected', 'info');
         }
-        
-        function onCharacteristicChanged(event) {
+
+        function onGaryDisconnected(event) {
+            garyConnected = false;
+            dataBuffer = '';
+            pageInProgress = false;
+            updateStatusDisplay();
+            addLog('Gary disconnected', 'warning');
+        }
+
+        function onGaryCharacteristicChanged(event) {
             const value = event.target.value;
             if (!value || value.byteLength === 0) return;
             
@@ -371,17 +581,41 @@
             
             // 按换行符分割处理
             const lines = dataBuffer.split('\n');
-            dataBuffer = lines.pop(); // 保留最后未完成的部分
+            dataBuffer = lines.pop();
             
             for (const line of lines) {
                 const trimmed = line.trim();
                 if (trimmed) {
                     addLog(trimmed, 'info');
                     parseResponse(trimmed);
+                    checkPhaseForMotor(trimmed);
                 }
             }
         }
-        
+
+        function checkPhaseForMotor(text) {
+            if (!pageInProgress) return;
+            
+            text = text.trim();
+            
+            // 检测Phase 3 - 启动电机
+            if (text.includes('Phase') && text.includes('3')) {
+                addLog('Detected Phase 3, starting motor...', 'motor');
+                if (motorSpeed > 0) {
+                    sendToHC02(`S${motorSpeed}`);
+                } else {
+                    addLog('Motor speed is 0, skipping motor start', 'warning');
+                }
+            }
+            
+            // 检测Done - 停止电机
+            if (text.includes('Phase 7')) {
+                addLog('Detected Phase 7, stopping motor...', 'motor');
+                sendToHC02('S0');
+                pageInProgress = false;
+            }
+        }
+
         function parseResponse(text) {
             text = text.trim();
             if (!text) return;
@@ -413,16 +647,20 @@
                 // Ignore parse errors
             }
         }
-        
+
         async function sendCommand(cmd) {
-            if (!connected || !characteristic) {
-                addLog('Not connected', 'error');
+            if (!garyConnected || !garyCharacteristic) {
+                addLog('Gary not connected', 'error');
                 return;
             }
             
             try {
                 if (cmd === 'init') pendingCmd = 'init';
                 else if (cmd === 'fina') pendingCmd = 'final';
+                else if (cmd === 'move') {
+                    pageInProgress = true;
+                    pendingCmd = 'move';
+                }
                 
                 // Convert to 4-byte command
                 const encoder = new TextEncoder();
@@ -442,18 +680,18 @@
                 packet[0] = 0x06;
                 packet.set(cmdBytes, 1);
                 
-                await characteristic.writeValue(packet);
-                addLog(`Sent: ${cmd}`, 'success');
+                await garyCharacteristic.writeValue(packet);
+                addLog(`Sent to Gary: ${cmd}`, 'success');
                 
             } catch (error) {
                 addLog(`Send error: ${error.message}`, 'error');
             }
         }
-        
+
         // Check Web Bluetooth support
         if (!navigator.bluetooth) {
             document.getElementById('bluetoothNote').innerHTML = 
-                '<strong>错误：</strong>您的浏览器不支持 Web Bluetooth API。请使用 Chrome、Edge 或 Opera 浏览器。';
+                '<strong>错误：</strong>您的浏览器不支持 Web Bluetooth API。请使用 Chrome 或 Edge 浏览器。';
         }
     </script>
 </body>
