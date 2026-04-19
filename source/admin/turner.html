@@ -2,249 +2,429 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>翻页机械臂控制</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
+            color: #fff;
         }
         .container {
-            max-width: 600px;
+            max-width: 480px;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
         }
+        
+        /* 头部 */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
             text-align: center;
+            padding: 20px 0;
         }
-        .header h1 { font-size: 24px; font-weight: 600; }
-        .status-bar {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #eee;
+        .header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .status-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #dc3545;
-            margin-right: 10px;
-            transition: background 0.3s;
+        
+        /* 连接状态卡片 */
+        .connection-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .status-indicator.connected { background: #28a745; }
-        .status-indicator.hc02-connected { background: #17a2b8; }
-        .status-indicator.all-connected { background: #28a745; box-shadow: 0 0 8px #28a745; }
-        .status-text { font-size: 14px; color: #666; }
-        .content { padding: 20px; }
-        .btn-group {
+        .conn-title {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .conn-devices {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-bottom: 20px;
         }
-        .btn {
-            padding: 15px 20px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-        .btn-secondary { background: #e9ecef; color: #495057; }
-        .btn-secondary:hover { background: #dee2e6; }
-        .btn-connect { grid-column: 1 / -1; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
-        .btn-connect:hover { box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4); }
-        .btn-connect.connected { background: #6c757d; }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
-        .motor-control {
-            background: #f8f9fa;
+        .device-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px;
             padding: 15px;
-            margin-bottom: 20px;
-        }
-        .motor-control-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .motor-input-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .motor-input {
-            flex: 1;
-            padding: 10px 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
             text-align: center;
         }
-        .motor-input:focus {
-            border-color: #667eea;
-            outline: none;
+        .device-btn:hover { background: rgba(255,255,255,0.1); }
+        .device-btn.connected {
+            background: rgba(40,167,69,0.2);
+            border-color: #28a745;
+        }
+        .device-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .device-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .device-status {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+        .device-btn.connected .device-status { color: #28a745; }
+        
+        /* Phase 进度条 */
+        .phase-progress {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .phase-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .phase-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        .phase-text {
+            font-size: 13px;
+            color: #888;
+            text-align: center;
+        }
+        
+        /* 操作按钮 */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        .action-buttons.collapsed {
+            grid-template-columns: 1fr;
+        }
+        .action-buttons.collapsed .btn-secondary {
+            display: none;
+        }
+        .btn {
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        /* 翻页主按钮 - 大尺寸醒目 */
+        .btn-primary {
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 50%, #feca57 100%);
+            color: white;
+            grid-column: 1 / -1;
+            padding: 28px 20px;
+            font-size: 22px;
+            font-weight: 700;
+            border-radius: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 20px rgba(233,69,96,0.4);
+            letter-spacing: 2px;
+        }
+        .btn-primary:hover:not(:disabled) {
+            box-shadow: 0 10px 35px rgba(233,69,96,0.5);
+            transform: translateY(-2px);
+        }
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0) scale(0.98);
+        }
+        .btn-primary.running {
+            animation: pulse-primary 1.2s infinite;
+        }
+        @keyframes pulse-primary {
+            0%, 100% { 
+                box-shadow: 0 6px 20px rgba(233,69,96,0.4);
+            }
+            50% { 
+                box-shadow: 0 6px 40px rgba(233,69,96,0.7);
+            }
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .btn-secondary:hover:not(:disabled) { background: rgba(255,255,255,0.15); }
+        .btn-danger {
+            background: rgba(220,53,69,0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(220,53,69,0.3);
+        }
+        .btn-success {
+            background: rgba(40,167,69,0.2);
+            color: #28a745;
+            border: 1px solid rgba(40,167,69,0.3);
+        }
+        .btn.running {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* 电机控制 */
+        .motor-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .motor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .motor-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .motor-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #667eea;
+            font-family: 'Monaco', monospace;
         }
         .motor-slider {
             width: 100%;
-            margin-top: 10px;
+            height: 8px;
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            outline: none;
         }
-        .position-info {
-            background: #f8f9fa;
-            border-radius: 12px;
+        .motor-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        /* 位置信息 */
+        .position-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
             padding: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .position-item {
+        .pos-row {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             padding: 10px 0;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .position-item:last-child { border-bottom: none; }
-        .position-label { color: #666; font-size: 14px; }
-        .position-value { color: #333; font-weight: 600; font-size: 14px; }
-        .position-value.set { color: #667eea; }
-        .log-section { margin-top: 20px; }
-        .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .log-title { font-size: 16px; font-weight: 600; color: #333; }
-        .log-container {
-            background: #1e1e1e;
-            border-radius: 12px;
-            padding: 15px;
-            height: 200px;
-            overflow-y: auto;
-            font-family: 'Monaco', 'Menlo', monospace;
+        .pos-row:last-child { border-bottom: none; }
+        .pos-label { color: #888; font-size: 14px; }
+        .pos-value {
+            font-family: 'Monaco', monospace;
             font-size: 13px;
+            color: #667eea;
         }
-        .log-line { color: #d4d4d4; margin-bottom: 5px; line-height: 1.4; }
+        .pos-value.empty { color: #555; }
+        
+        /* 日志 */
+        .log-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .log-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .log-clear {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .log-container {
+            height: 150px;
+            overflow-y: auto;
+            font-family: 'Monaco', monospace;
+            font-size: 12px;
+        }
+        .log-line {
+            padding: 3px 0;
+            color: #888;
+        }
         .log-line.info { color: #4fc3f7; }
         .log-line.success { color: #81c784; }
         .log-line.warning { color: #ffb74d; }
+        .log-line.error { color: #ff6b6b; }
         .log-line.motor { color: #ce93d8; }
-        .language-toggle { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
-        .lang-btn {
-            padding: 8px 16px;
-            border: 2px solid #667eea;
-            background: white;
-            color: #667eea;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
+        
+        /* Toast 提示 */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
-        .lang-btn.active { background: #667eea; color: white; }
-        .lang-btn:hover { background: #667eea; color: white; }
-        .bluetooth-note {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 15px;
-            font-size: 12px;
-            color: #856404;
-        }
-        .connection-status {
+        .toast.show { opacity: 1; }
+        
+        /* 语言切换 */
+        .lang-toggle {
             display: flex;
-            gap: 15px;
+            gap: 8px;
             justify-content: center;
             margin-bottom: 15px;
         }
-        .conn-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
+        .lang-btn {
+            padding: 6px 14px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: transparent;
+            color: #888;
+            border-radius: 15px;
+            cursor: pointer;
             font-size: 12px;
-            font-weight: 500;
+            transition: all 0.3s;
         }
-        .conn-badge.gary { background: #e9ecef; color: #495057; }
-        .conn-badge.gary.connected { background: #28a745; color: white; }
-        .conn-badge.hc02 { background: #e9ecef; color: #495057; }
-        .conn-badge.hc02.connected { background: #17a2b8; color: white; }
-        @media (max-width: 480px) { .btn-group { grid-template-columns: 1fr; } }
+        .lang-btn.active {
+            background: #667eea;
+            color: #fff;
+            border-color: #667eea;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><h1 id="appTitle">翻页机械臂控制</h1></div>
+        <div class="header">
+            <h1 id="title">翻页机械臂控制</h1>
+        </div>
         
-        <div class="content">
-            <div class="bluetooth-note" id="bluetoothNote">
-                <strong>注意：</strong>此页面需要浏览器支持 Web Bluetooth API。请使用 Chrome、Edge 浏览器，并确保 HTTPS 或 localhost 环境访问。
-            </div>
-            
-            <div class="language-toggle">
-                <button class="lang-btn active" id="langZh" onclick="setLanguage('zh')">中文</button>
-                <button class="lang-btn" id="langEn" onclick="setLanguage('en')">English</button>
-            </div>
-            
-            <div class="status-bar">
-                <div class="status-indicator" id="statusIndicator"></div>
-                <span class="status-text" id="statusText">未连接</span>
-            </div>
-
-            <div class="connection-status">
-                <span class="conn-badge gary" id="garyBadge">Gary</span>
-                <span class="conn-badge hc02" id="hc02Badge">HC-02</span>
-            </div>
-            
-            <div class="btn-group">
-                <button class="btn btn-connect" id="connectBtn" onclick="toggleConnect()">连接设备</button>
-                <button class="btn btn-primary" id="initBtn" onclick="sendCommand('init')" disabled>设置起始点</button>
-                <button class="btn btn-primary" id="finalBtn" onclick="sendCommand('fina')" disabled>设置终点</button>
-                <button class="btn btn-secondary" id="pageBtn" onclick="sendCommand('move')" disabled>翻页</button>
-                <button class="btn btn-secondary" id="statusBtn" onclick="sendCommand('statu')" disabled>查看状态</button>
-            </div>
-
-            <div class="motor-control">
-                <div class="motor-control-title" id="motorTitle">电机转速 (0-255)</div>
-                <div class="motor-input-group">
-                    <input type="number" class="motor-input" id="motorSpeed" min="0" max="255" value="0" onchange="updateMotorSpeed()">
-                    <button class="btn btn-secondary" id="setMotorBtn" onclick="setMotorSpeed()" disabled>设置转速</button>
+        <!-- 语言切换 -->
+        <div class="lang-toggle">
+            <button class="lang-btn active" id="langZh" onclick="setLang('zh')">中文</button>
+            <button class="lang-btn" id="langEn" onclick="setLang('en')">English</button>
+        </div>
+        
+        <!-- 连接状态 -->
+        <div class="connection-card">
+            <div class="conn-title" id="connTitle">设备连接</div>
+            <div class="conn-devices">
+                <div class="device-btn" id="garyBtn" onclick="toggleGary()">
+                    <div class="device-icon">🤖</div>
+                    <div class="device-name">Gary Hub</div>
+                    <div class="device-status" id="garyStatus">未连接</div>
                 </div>
-                <input type="range" class="motor-slider" id="motorSlider" min="0" max="255" value="0" oninput="syncMotorInput()">
-            </div>
-            
-            <div class="position-info">
-                <div class="position-item">
-                    <span class="position-label" id="startLabel">起始点:</span>
-                    <span class="position-value" id="startValue">未设置</span>
+                <div class="device-btn" id="hc02Btn" onclick="toggleHC02()">
+                    <div class="device-icon">📡</div>
+                    <div class="device-name">HC-02</div>
+                    <div class="device-status" id="hc02Status">未连接</div>
                 </div>
-                <div class="position-item">
-                    <span class="position-label" id="endLabel">终点:</span>
-                    <span class="position-value" id="endValue">未设置</span>
-                </div>
-            </div>
-            
-            <div class="log-section">
-                <div class="log-header">
-                    <span class="log-title" id="logTitle">日志</span>
-                    <button class="btn btn-secondary" style="padding:5px 15px;font-size:12px" onclick="clearLog()">清除</button>
-                </div>
-                <div class="log-container" id="logContainer"><div class="log-line">System ready. Click "Connect Devices" to start.</div></div>
             </div>
         </div>
+        
+        <!-- Phase 进度 -->
+        <div class="phase-progress">
+            <div class="phase-bar">
+                <div class="phase-fill" id="phaseFill"></div>
+            </div>
+            <div class="phase-text" id="phaseText">待机</div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="action-buttons">
+            <button class="btn btn-secondary" id="initBtn" onclick="setInit()" disabled>
+                <span>📍</span> <span id="initLabel">起始点</span>
+            </button>
+            <button class="btn btn-secondary" id="finalBtn" onclick="setFinal()" disabled>
+                <span>🏁</span> <span id="finalLabel">终点</span>
+            </button>
+            <button class="btn btn-primary" id="pageBtn" onclick="startPage()" disabled>
+                <span>📖</span> <span id="pageLabel">翻页</span>
+            </button>
+        </div>
+        
+        <!-- 电机控制 -->
+        <div class="motor-card">
+            <div class="motor-header">
+                <span class="motor-title" id="motorTitle">电机转速</span>
+                <span class="motor-value" id="motorValue">0</span>
+            </div>
+            <input type="range" class="motor-slider" id="motorSlider" min="0" max="255" value="0" oninput="updateMotor()">
+        </div>
+        
+        <!-- 位置信息 -->
+        <div class="position-card">
+            <div class="pos-row">
+                <span class="pos-label" id="startLabel">起始点</span>
+                <span class="pos-value empty" id="startPos">未设置</span>
+            </div>
+            <div class="pos-row">
+                <span class="pos-label" id="endLabel">终点</span>
+                <span class="pos-value empty" id="endPos">未设置</span>
+            </div>
+        </div>
+        
+        <!-- 日志 -->
+        <div class="log-card">
+            <div class="log-header">
+                <span class="log-title" id="logLabel">日志</span>
+                <button class="log-clear" onclick="clearLog()">清除</button>
+            </div>
+            <div class="log-container" id="logContainer"></div>
+        </div>
     </div>
+    
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
 
     <script>
         // Pybricks Bluetooth UUIDs
@@ -253,133 +433,122 @@
         
         // HC-02 BLE UUIDs
         const UART_SERVICE_UUID = '49535343-fe7d-4ae5-8fa9-9fafd205e455';
-        const HC02_TX_CHAR_UUID = '49535343-1e4d-4bd9-ba61-23c647249616'; // Central writes here to send to HC-02
-        const HC02_RX_CHAR_UUID = '49535343-8841-43f4-a8d4-ecbe34729bb3'; // Central reads from HC-02
+        const HC02_TX_CHAR_UUID = '49535343-1e4d-4bd9-ba61-23c647249616';
+        const HC02_RX_CHAR_UUID = '49535343-8841-43f4-a8d4-ecbe34729bb3';
         
         let lang = 'zh';
-        let garyDevice = null;
-        let garyServer = null;
-        let garyCharacteristic = null;
-        let garyConnected = false;
-        let hc02Device = null;
-        let hc02Server = null;
-        let hc02TxChar = null;  // For receiving from HC-02
-        let hc02RxChar = null;  // For sending to HC-02
-        let hc02Connected = false;
-        let connected = false;
+        let garyDevice = null, garyServer = null, garyCharacteristic = null, garyConnected = false;
+        let hc02Device = null, hc02Server = null, hc02RxChar = null, hc02Connected = false;
         let pendingCmd = null;
-        let initFlag = null;
-        let finalFlag = null;
+        let initFlag = null, finalFlag = null;
         let dataBuffer = '';
         let motorSpeed = 0;
-        let pageInProgress = false;
-
-        const t = {
+        let pageRunning = false;
+        let currentPhase = 0;
+        let rdyReady = false;  // Hub 是否就绪
+        let pendingStatCmd = null;  // 等待 rdy 后要发送的命令
+        
+        const i18n = {
             zh: {
                 title: '翻页机械臂控制',
-                connect: '连接设备',
-                disconnect: '断开连接',
-                init: '设置起始点',
-                final: '设置终点',
-                page: '翻页',
-                status: '查看状态',
-                startLabel: '起始点:',
-                endLabel: '终点:',
+                connTitle: '设备连接',
+                initLabel: '起始点',
+                finalLabel: '终点',
+                pageLabel: '翻页',
+                motorTitle: '电机转速',
+                startLabel: '起始点',
+                endLabel: '终点',
+                logLabel: '日志',
                 notSet: '未设置',
-                logTitle: '日志',
-                statusDisconnected: '未连接',
-                statusConnected: '已连接(部分)',
-                statusAllConnected: '已连接',
-                bluetoothNote: '<strong>注意：</strong>此页面需要浏览器支持 Web Bluetooth API。请使用 Chrome、Edge 浏览器，并确保 HTTPS 或 localhost 环境访问。',
-                motorTitle: '电机转速 (0-255)'
+                connected: '已连接',
+                disconnected: '未连接',
+                connecting: '连接中...',
+                toastConnected: '设备连接成功',
+                toastDisconnected: '已断开连接',
+                toastSetInit: '起始点已设置',
+                toastSetFinal: '终点已设置',
+                toastNeedBoth: '请先设置起始点和终点',
+                toastStartFirst: '请先连接设备',
+                toastPageDone: '翻页完成'
             },
             en: {
-                title: 'Page Turner Arm Control',
-                connect: 'Connect Devices',
-                disconnect: 'Disconnect',
-                init: 'Set Start',
-                final: 'Set End',
-                page: 'Turn Page',
-                status: 'Check Status',
-                startLabel: 'Start:',
-                endLabel: 'End:',
+                title: 'Page Turner Control',
+                connTitle: 'Device Connection',
+                initLabel: 'Start',
+                finalLabel: 'End',
+                pageLabel: 'Turn Page',
+                motorTitle: 'Motor Speed',
+                startLabel: 'Start Point',
+                endLabel: 'End Point',
+                logLabel: 'Log',
                 notSet: 'Not Set',
-                logTitle: 'Log',
-                statusDisconnected: 'Disconnected',
-                statusConnected: 'Connected (Partial)',
-                statusAllConnected: 'All Connected',
-                bluetoothNote: '<strong>Note:</strong> This page requires Web Bluetooth API. Use Chrome or Edge browser, and ensure HTTPS or localhost access.',
-                motorTitle: 'Motor Speed (0-255)'
+                connected: 'Connected',
+                disconnected: 'Disconnected',
+                connecting: 'Connecting...',
+                toastConnected: 'Devices connected',
+                toastDisconnected: 'Disconnected',
+                toastSetInit: 'Start point set',
+                toastSetFinal: 'End point set',
+                toastNeedBoth: 'Set start and end points first',
+                toastStartFirst: 'Connect devices first',
+                toastPageDone: 'Page turned'
             }
         };
-
-        function setLanguage(l) {
+        
+        function setLang(l) {
             lang = l;
-            const tr = t[l];
-            document.getElementById('appTitle').textContent = tr.title;
-            document.getElementById('startLabel').textContent = tr.startLabel;
-            document.getElementById('endLabel').textContent = tr.endLabel;
-            document.getElementById('logTitle').textContent = tr.logTitle;
-            document.getElementById('bluetoothNote').innerHTML = tr.bluetoothNote;
-            document.getElementById('motorTitle').textContent = tr.motorTitle;
             document.getElementById('langZh').classList.toggle('active', l === 'zh');
             document.getElementById('langEn').classList.toggle('active', l === 'en');
-            updateStatusDisplay();
+            updateUI();
         }
-
-        function updateStatusDisplay() {
-            const tr = t[lang];
-            const indicator = document.getElementById('statusIndicator');
-            const statusText = document.getElementById('statusText');
-            const connectBtn = document.getElementById('connectBtn');
-            const garyBadge = document.getElementById('garyBadge');
-            const hc02Badge = document.getElementById('hc02Badge');
-
-            garyBadge.classList.toggle('connected', garyConnected);
-            hc02Badge.classList.toggle('connected', hc02Connected);
-
-            connected = garyConnected && hc02Connected;
+        
+        function updateUI() {
+            const t = i18n[lang];
+            document.getElementById('title').textContent = t.title;
+            document.getElementById('connTitle').textContent = t.connTitle;
+            document.getElementById('initLabel').textContent = t.initLabel;
+            document.getElementById('finalLabel').textContent = t.finalLabel;
+            document.getElementById('pageLabel').textContent = t.pageLabel;
+            document.getElementById('motorTitle').textContent = t.motorTitle;
+            document.getElementById('startLabel').textContent = t.startLabel;
+            document.getElementById('endLabel').textContent = t.endLabel;
+            document.getElementById('logLabel').textContent = t.logLabel;
             
-            if (connected) {
-                indicator.classList.add('connected', 'all-connected');
-                statusText.textContent = tr.statusAllConnected;
-                connectBtn.textContent = tr.disconnect;
-                connectBtn.classList.add('connected');
-            } else if (garyConnected || hc02Connected) {
-                indicator.classList.add('connected', 'hc02-connected');
-                indicator.classList.remove('all-connected');
-                statusText.textContent = tr.statusConnected;
-                connectBtn.textContent = tr.disconnect;
-                connectBtn.classList.add('connected');
-            } else {
-                indicator.classList.remove('connected', 'hc02-connected', 'all-connected');
-                statusText.textContent = tr.statusDisconnected;
-                connectBtn.textContent = tr.connect;
-                connectBtn.classList.remove('connected');
-            }
+            document.getElementById('garyStatus').textContent = garyConnected ? t.connected : t.disconnected;
+            document.getElementById('hc02Status').textContent = hc02Connected ? t.connected : t.disconnected;
+            document.getElementById('garyBtn').classList.toggle('connected', garyConnected);
+            document.getElementById('hc02Btn').classList.toggle('connected', hc02Connected);
             
-            ['initBtn', 'finalBtn', 'pageBtn', 'statusBtn', 'setMotorBtn'].forEach(id => {
-                document.getElementById(id).disabled = !garyConnected;
-            });
+            document.getElementById('startPos').textContent = initFlag ? JSON.stringify(initFlag) : t.notSet;
+            document.getElementById('startPos').classList.toggle('empty', !initFlag);
+            document.getElementById('endPos').textContent = finalFlag ? JSON.stringify(finalFlag) : t.notSet;
+            document.getElementById('endPos').classList.toggle('empty', !finalFlag);
             
-            const sv = document.getElementById('startValue');
-            const ev = document.getElementById('endValue');
-            if (initFlag) {
-                sv.textContent = JSON.stringify(initFlag);
-                sv.classList.add('set');
+            const canControl = garyConnected;
+            const bothSet = initFlag && finalFlag;
+            
+            // 两个都设置时折叠设置按钮
+            const actionBtns = document.querySelector('.action-buttons');
+            actionBtns.classList.toggle('collapsed', bothSet);
+            
+            document.getElementById('initBtn').disabled = !canControl || bothSet;
+            document.getElementById('finalBtn').disabled = !canControl || bothSet;
+            document.getElementById('pageBtn').disabled = !canControl || !initFlag || !finalFlag;
+            
+            if (pageRunning) {
+                document.getElementById('pageBtn').classList.add('running');
             } else {
-                sv.textContent = tr.notSet;
-                sv.classList.remove('set');
-            }
-            if (finalFlag) {
-                ev.textContent = JSON.stringify(finalFlag);
-                ev.classList.add('set');
-            } else {
-                ev.textContent = tr.notSet;
-                ev.classList.remove('set');
+                document.getElementById('pageBtn').classList.remove('running');
             }
         }
-
+        
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+        
         function addLog(msg, level = 'info') {
             const lc = document.getElementById('logContainer');
             const line = document.createElement('div');
@@ -388,311 +557,279 @@
             lc.appendChild(line);
             lc.scrollTop = lc.scrollHeight;
         }
-
+        
         function clearLog() {
             document.getElementById('logContainer').innerHTML = '';
         }
-
-        function syncMotorInput() {
-            const slider = document.getElementById('motorSlider');
-            document.getElementById('motorSpeed').value = slider.value;
+        
+        function updateMotor() {
+            motorSpeed = parseInt(document.getElementById('motorSlider').value);
+            document.getElementById('motorValue').textContent = motorSpeed;
         }
-
-        function updateMotorSpeed() {
-            const input = document.getElementById('motorSpeed');
-            const slider = document.getElementById('motorSlider');
-            let val = parseInt(input.value) || 0;
-            val = Math.max(0, Math.min(255, val));
-            input.value = val;
-            slider.value = val;
-            motorSpeed = val;
-        }
-
-        function setMotorSpeed() {
-            updateMotorSpeed();
-            addLog(`Motor speed set to: ${motorSpeed}`, 'motor');
-        }
-
-        async function sendToHC02(cmd) {
-            if (!hc02Connected || !hc02RxChar) {
-                addLog('HC-02 not connected', 'warning');
-                return;
-            }
-            try {
-                const encoder = new TextEncoder();
-                await hc02RxChar.writeValue(encoder.encode(cmd + '\n'));
-                addLog(`HC-02 TX: ${cmd}`, 'motor');
-            } catch (e) {
-                addLog(`HC-02 send error: ${e.message}`, 'error');
-            }
-        }
-
-        async function toggleConnect() {
-            if (connected) {
-                await disconnect();
+        
+        async function toggleGary() {
+            if (garyConnected) {
+                if (garyDevice) garyDevice.gatt.disconnect();
             } else {
-                await connect();
+                await connectGary();
             }
+            updateUI();
         }
-
-        async function connect() {
-            // 连接 Gary (Bluetooth)
-            await connectGary();
-            // 连接 HC-02 (BLE)
-            await connectHC02();
-            updateStatusDisplay();
+        
+        async function toggleHC02() {
+            if (hc02Connected) {
+                if (hc02Device) hc02Device.gatt.disconnect();
+            } else {
+                await connectHC02();
+            }
+            updateUI();
         }
-
+        
         async function connectGary() {
             try {
                 dataBuffer = '';
-                addLog('Requesting Gary device...', 'info');
-                
+                addLog('Requesting Gary Hub...', 'info');
                 garyDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ namePrefix: 'Gary' }],
                     optionalServices: [PYBRICKS_SERVICE_UUID]
                 });
-                
-                addLog(`Gary found: ${garyDevice.name}`, 'success');
-                
-                garyDevice.addEventListener('gattserverdisconnected', onGaryDisconnected);
-                
+                addLog(`Found: ${garyDevice.name}`, 'success');
+                garyDevice.addEventListener('gattserverdisconnected', () => {
+                    garyConnected = false;
+                    rdyReady = false;
+                    pendingStatCmd = null;
+                    updateUI();
+                    addLog('Gary disconnected', 'warning');
+                });
                 garyServer = await garyDevice.gatt.connect();
                 const service = await garyServer.getPrimaryService(PYBRICKS_SERVICE_UUID);
                 garyCharacteristic = await service.getCharacteristic(PYBRICKS_COMMAND_CHAR_UUID);
-                
                 await garyCharacteristic.startNotifications();
-                garyCharacteristic.addEventListener('characteristicvaluechanged', onGaryCharacteristicChanged);
-                
+                garyCharacteristic.addEventListener('characteristicvaluechanged', onGaryData);
                 garyConnected = true;
-                updateStatusDisplay();
-                addLog('Gary connected successfully!', 'success');
-                
-            } catch (error) {
-                addLog(`Gary error: ${error.message}`, 'error');
-                garyConnected = false;
+                rdyReady = false;
+                pendingStatCmd = 'stat';
+                showToast(i18n[lang].toastConnected);
+                addLog('Gary connected!', 'success');
+                // 等待 rdy 后发送 stat
+            } catch (e) {
+                addLog(`Gary error: ${e.message}`, 'error');
             }
         }
-
+        
         async function connectHC02() {
             try {
-                addLog('Requesting HC-02 BLE device...', 'info');
-                
+                addLog('Requesting HC-02...', 'info');
                 hc02Device = await navigator.bluetooth.requestDevice({
                     acceptAllDevices: true,
                     optionalServices: [UART_SERVICE_UUID]
                 });
-                
-                addLog(`HC-02 found: ${hc02Device.name || 'Unknown'}`, 'success');
-                
-                // 验证是否为ATTiny85-Motor设备
                 if (!hc02Device.name || !hc02Device.name.includes('ATTiny85')) {
-                    addLog('Please select ATTiny85-Motor device', 'warning');
-                    hc02Device = null;
+                    addLog('Select ATTiny85-Motor device', 'warning');
                     return;
                 }
-                
-                hc02Device.addEventListener('gattserverdisconnected', onHC02Disconnected);
-                
+                addLog(`Found: ${hc02Device.name}`, 'success');
+                hc02Device.addEventListener('gattserverdisconnected', () => {
+                    hc02Connected = false;
+                    updateUI();
+                    addLog('HC-02 disconnected', 'warning');
+                });
                 hc02Server = await hc02Device.gatt.connect();
                 const service = await hc02Server.getPrimaryService(UART_SERVICE_UUID);
-                
-                // 获取TX特征(接收数据)和RX特征(发送数据)
-                const characteristics = await service.getCharacteristics();
-                for (const char of characteristics) {
-                    if (char.uuid === HC02_TX_CHAR_UUID) {
-                        hc02TxChar = char;
-                        await hc02TxChar.startNotifications();
-                        hc02TxChar.addEventListener('characteristicvaluechanged', onHC02CharacteristicChanged);
-                    } else if (char.uuid === HC02_RX_CHAR_UUID) {
-                        hc02RxChar = char;
+                const chars = await service.getCharacteristics();
+                for (const c of chars) {
+                    if (c.uuid === HC02_RX_CHAR_UUID) hc02RxChar = c;
+                    if (c.uuid === HC02_TX_CHAR_UUID) {
+                        await c.startNotifications();
+                        c.addEventListener('characteristicvaluechanged', e => {
+                            const text = new TextDecoder().decode(e.target.value);
+                            addLog(`HC-02: ${text.trim()}`, 'motor');
+                        });
                     }
                 }
-                
                 hc02Connected = true;
-                updateStatusDisplay();
-                addLog('HC-02 connected successfully!', 'success');
-                
-            } catch (error) {
-                addLog(`HC-02 error: ${error.message}`, 'error');
-                hc02Connected = false;
+                updateUI();
+                addLog('HC-02 connected!', 'success');
+            } catch (e) {
+                addLog(`HC-02 error: ${e.message}`, 'error');
             }
-        }
-
-        function onHC02Disconnected(event) {
-            hc02Connected = false;
-            updateStatusDisplay();
-            addLog('HC-02 disconnected', 'warning');
         }
         
-        function onHC02CharacteristicChanged(event) {
-            const value = event.target.value;
-            if (!value || value.byteLength === 0) return;
-            
-            const text = new TextDecoder('utf-8', { fatal: false }).decode(value);
-            addLog(`HC-02 RX: ${text.trim()}`, 'motor');
-        }
-        
-        async function disconnect() {
-            // 断开Gary
-            try {
-                if (garyDevice && garyDevice.gatt.connected) {
-                    garyDevice.gatt.disconnect();
-                }
-                garyConnected = false;
-            } catch (error) {
-                addLog(`Gary disconnect error: ${error.message}`, 'error');
-            }
-            
-            // 断开HC-02
-            try {
-                if (hc02Device && hc02Device.gatt.connected) {
-                    hc02Device.gatt.disconnect();
-                }
-                hc02Connected = false;
-            } catch (error) {
-                addLog(`HC-02 disconnect error: ${error.message}`, 'error');
-            }
-            
-            updateStatusDisplay();
-            addLog('Disconnected', 'info');
-        }
-
-        function onGaryDisconnected(event) {
-            garyConnected = false;
-            dataBuffer = '';
-            pageInProgress = false;
-            updateStatusDisplay();
-            addLog('Gary disconnected', 'warning');
-        }
-
-        function onGaryCharacteristicChanged(event) {
-            const value = event.target.value;
-            if (!value || value.byteLength === 0) return;
-            
-            const data = new Uint8Array(value.buffer);
+        function onGaryData(event) {
+            const data = new Uint8Array(event.target.value.buffer);
             if (data[0] !== 0x01) return;
-            
-            const payload = data.slice(1);
-            const text = new TextDecoder('utf-8', { fatal: false }).decode(payload);
-            
-            // 累积数据
+            const text = new TextDecoder().decode(data.slice(1));
             dataBuffer += text;
-            
-            // 按换行符分割处理
             const lines = dataBuffer.split('\n');
             dataBuffer = lines.pop();
-            
             for (const line of lines) {
-                const trimmed = line.trim();
-                if (trimmed) {
-                    addLog(trimmed, 'info');
-                    parseResponse(trimmed);
-                    checkPhaseForMotor(trimmed);
-                }
-            }
-        }
-
-        function checkPhaseForMotor(text) {
-            if (!pageInProgress) return;
-            
-            text = text.trim();
-            
-            // 检测Phase 3 - 启动电机
-            if (text.includes('Phase') && text.includes('3')) {
-                addLog('Detected Phase 3, starting motor...', 'motor');
-                if (motorSpeed > 0) {
-                    sendToHC02(`S${motorSpeed}`);
-                } else {
-                    addLog('Motor speed is 0, skipping motor start', 'warning');
-                }
-            }
-            
-            // 检测Done - 停止电机
-            if (text.includes('Phase 7')) {
-                addLog('Detected Phase 7, stopping motor...', 'motor');
-                sendToHC02('S0');
-                pageInProgress = false;
-            }
-        }
-
-        function parseResponse(text) {
-            text = text.trim();
-            if (!text) return;
-            
-            try {
-                let angles;
-                if (text.startsWith('[')) {
-                    angles = JSON.parse(text);
-                } else if (text.split(' ').length === 3) {
-                    angles = text.split(' ').map(Number);
-                } else {
-                    return;
-                }
-                
-                if (Array.isArray(angles) && angles.length === 3 && angles.every(n => typeof n === 'number')) {
-                    if (pendingCmd === 'init') {
-                        initFlag = angles;
-                        pendingCmd = null;
-                        updateStatusDisplay();
-                        addLog(`Start point saved: ${angles}`, 'success');
-                    } else if (pendingCmd === 'final') {
-                        finalFlag = angles;
-                        pendingCmd = null;
-                        updateStatusDisplay();
-                        addLog(`End point saved: ${angles}`, 'success');
+                const msg = line.trim();
+                if (msg) {
+                    addLog(msg);
+                    parseData(msg);
+                    updatePhase(msg);
+                    // 检测 Hub 就绪
+                    if (msg.includes('Waiting for input')) {
+                        rdyReady = true;
+                        // 如果有待发送的命令，立即发送
+                        if (pendingStatCmd) {
+                            const cmd = pendingStatCmd;
+                            pendingStatCmd = null;
+                            sendGaryCmdDirect(cmd);
+                        }
                     }
                 }
-            } catch (e) {
-                // Ignore parse errors
             }
         }
-
-        async function sendCommand(cmd) {
-            if (!garyConnected || !garyCharacteristic) {
-                addLog('Gary not connected', 'error');
+        
+        function parseData(text) {
+            // 检测程序停止或自动启动，重置状态并重新获取
+            if (text.includes('The program was stopped') || text.includes('SystemExit') || text.includes('Auto-start')) {
+                pageRunning = false;
+                updateUI();
+                // 等待 rdy 后重新获取状态
+                pendingStatCmd = 'stat';
                 return;
             }
             
-            try {
-                if (cmd === 'init') pendingCmd = 'init';
-                else if (cmd === 'fina') pendingCmd = 'final';
-                else if (cmd === 'move') {
-                    pageInProgress = true;
-                    pendingCmd = 'move';
+            // 解析 stat 命令返回的状态
+            if (text.startsWith('initFlag:')) {
+                const val = text.replace('initFlag:', '').trim();
+                if (val !== 'None' && val !== 'False') {
+                    try {
+                        initFlag = JSON.parse(val);
+                    } catch(e) {
+                        initFlag = null;
+                    }
+                } else {
+                    initFlag = null;
                 }
-                
-                // Convert to 4-byte command
-                const encoder = new TextEncoder();
-                let cmdBytes = encoder.encode(cmd);
-                
-                // Pad or truncate to 4 bytes
-                if (cmdBytes.length < 4) {
-                    const padded = new Uint8Array(4);
-                    padded.set(cmdBytes);
-                    cmdBytes = padded;
-                } else if (cmdBytes.length > 4) {
-                    cmdBytes = cmdBytes.slice(0, 4);
+                updateUI();
+            } else if (text.startsWith('finFlag:')) {
+                const val = text.replace('finFlag:', '').trim();
+                if (val !== 'None' && val !== 'False') {
+                    try {
+                        finalFlag = JSON.parse(val);
+                    } catch(e) {
+                        finalFlag = null;
+                    }
+                } else {
+                    finalFlag = null;
                 }
-                
-                // Add header byte 0x06
-                const packet = new Uint8Array(5);
-                packet[0] = 0x06;
-                packet.set(cmdBytes, 1);
-                
-                await garyCharacteristic.writeValue(packet);
-                addLog(`Sent to Gary: ${cmd}`, 'success');
-                
-            } catch (error) {
-                addLog(`Send error: ${error.message}`, 'error');
+                updateUI();
+            }
+            // 解析起始点/终点数据
+            else if (text.startsWith('[')) {
+                try {
+                    const arr = JSON.parse(text);
+                    if (Array.isArray(arr) && arr.length === 3) {
+                        if (pendingCmd === 'init') {
+                            initFlag = arr;
+                            showToast(i18n[lang].toastSetInit);
+                            pendingCmd = null;
+                        } else if (pendingCmd === 'final') {
+                            finalFlag = arr;
+                            showToast(i18n[lang].toastSetFinal);
+                            pendingCmd = null;
+                        }
+                        updateUI();
+                    }
+                } catch(e) {}
             }
         }
-
-        // Check Web Bluetooth support
-        if (!navigator.bluetooth) {
-            document.getElementById('bluetoothNote').innerHTML = 
-                '<strong>错误：</strong>您的浏览器不支持 Web Bluetooth API。请使用 Chrome 或 Edge 浏览器。';
+        
+        function updatePhase(text) {
+            const phase = text.match(/Phase\s*(\d+)/);
+            if (phase) {
+                currentPhase = parseInt(phase[1]);
+                document.getElementById('phaseFill').style.width = (currentPhase / 7 * 100) + '%';
+                document.getElementById('phaseText').textContent = text;
+                
+                // 自动控制电机
+                if (currentPhase === 3 && pageRunning && motorSpeed > 0) {
+                    sendToHC02(`S${motorSpeed}`);
+                    addLog('Motor started', 'motor');
+                }
+                if (currentPhase === 7) {
+                    sendToHC02('S0');
+                    addLog('Motor stopped', 'motor');
+                    // 翻页完成，重置状态以支持连续翻页
+                    pageRunning = false;
+                    updateUI();
+                    showToast(i18n[lang].toastPageDone);
+                }
+            }
         }
+        
+        async function sendToHC02(cmd) {
+            if (!hc02Connected || !hc02RxChar) return;
+            try {
+                const enc = new TextEncoder();
+                await hc02RxChar.writeValue(enc.encode(cmd + '\n'));
+            } catch (e) {
+                addLog(`HC-02 error: ${e.message}`, 'error');
+            }
+        }
+        
+        async function setInit() {
+            if (!garyConnected) { showToast(i18n[lang].toastStartFirst); return; }
+            pendingCmd = 'init';
+            await sendGaryCmd('init');
+        }
+        
+        async function setFinal() {
+            if (!garyConnected) { showToast(i18n[lang].toastStartFirst); return; }
+            pendingCmd = 'final';
+            await sendGaryCmd('fina');
+        }
+        
+        async function startPage() {
+            if (!garyConnected) { showToast(i18n[lang].toastStartFirst); return; }
+            if (!initFlag || !finalFlag) { showToast(i18n[lang].toastNeedBoth); return; }
+            pageRunning = true;
+            updateUI();
+            addLog('Starting page turn...', 'success');
+            await sendGaryCmd('move');
+        }
+        
+        // 直接发送命令（不等待 rdy）
+        async function sendGaryCmdDirect(cmd) {
+            if (!garyCharacteristic) return;
+            try {
+                const enc = new TextEncoder();
+                let bytes = enc.encode(cmd);
+                if (bytes.length < 4) {
+                    const padded = new Uint8Array(4);
+                    padded.set(bytes);
+                    bytes = padded;
+                }
+                const packet = new Uint8Array(5);
+                packet[0] = 0x06;
+                packet.set(bytes, 1);
+                await garyCharacteristic.writeValue(packet);
+                addLog(`Sent: ${cmd}`, 'success');
+            } catch (e) {
+                addLog(`Error: ${e.message}`, 'error');
+            }
+        }
+        
+        // 发送命令（等待 rdy 后发送）
+        async function sendGaryCmd(cmd) {
+            if (!garyConnected) return;
+            if (rdyReady) {
+                await sendGaryCmdDirect(cmd);
+            } else {
+                pendingStatCmd = cmd;
+            }
+        }
+        
+        // 初始化
+        if (!navigator.bluetooth) {
+            addLog('Web Bluetooth not supported!', 'error');
+        } else {
+            addLog('Ready. Connect devices to start.');
+        }
+        updateUI();
     </script>
 </body>
 </html>
