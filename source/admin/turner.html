@@ -621,13 +621,9 @@
             try {
                 addLog('Requesting HC-02...', 'info');
                 hc02Device = await navigator.bluetooth.requestDevice({
-                    acceptAllDevices: true,
+                    filters: [{ namePrefix: '=ATTiny85-Motor' }],
                     optionalServices: [UART_SERVICE_UUID]
                 });
-                if (!hc02Device.name || !hc02Device.name.includes('ATTiny85')) {
-                    addLog('Select ATTiny85-Motor device', 'warning');
-                    return;
-                }
                 addLog(`Found: ${hc02Device.name}`, 'success');
                 hc02Device.addEventListener('gattserverdisconnected', () => {
                     hc02Connected = false;
