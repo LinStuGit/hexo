@@ -1046,6 +1046,11 @@ links:
       avatar: "https://yksy.linthu.cn/img/favicon.jpg"
     }
     - {
+      title: "Alpha1022",
+      intro: "那儿，矛盾对立寂灭之处，即是涅槃。挚爱的渴望之星，依然向我灼灼燃烧。",
+      link: "https://diaries.alpha1022.me/",
+    }
+    - {
       title: "Fluid Blog",
       intro: "主题博客",
       link: "https://hexo.fluid-dev.com/",
